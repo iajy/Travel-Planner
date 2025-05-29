@@ -12,7 +12,6 @@ const Hero = () => {
 
   return (
     <>
-      {/* <div> */}
         <img
           src=".\src\assets\background_visual-85f87405.svg"
           alt=""
@@ -43,7 +42,11 @@ const Hero = () => {
           <div>
             {openForm && (
               <>
-                <div>
+                <motion.div
+                  initial={{opacity:0,y:-20}}
+                  animate={{opacity:1,y:0}}
+                  transition={{duration:0.7}}
+                >
                   <form action="" className="flex gap-5">
                     <input
                       type="text"
@@ -74,12 +77,11 @@ const Hero = () => {
                       className="rounded-full p-2 bg-blue-300/50"
                     />
                   </form>
-                </div>
+                </motion.div>
               </>
             )}
           </div>
         </motion.div>
-      {/* </div> */}
       <Destination/>
     </>
   );

@@ -208,7 +208,7 @@ const AppBar = () => {
                   </span>
                 </p>
               </form>
-              <p className="text-2xl cursor-pointer" onClick={closeLogin}>
+              <p className="text-2xl cursor-pointer " onClick={closeLogin}>
                 X
               </p>
             </motion.div>
