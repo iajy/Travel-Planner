@@ -7,145 +7,149 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
-
 public class Itinerary {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
-    
-    public UUID getId() {
-        return id;
-    }
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	private UUID userId;
+	private String username;
+	private String title;
+	private LocalDate startDate;
+	private LocalDate endDate;
 
-    public UUID getUserId() {
-        return userId;
-    }
+	
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
+	private String notes;
+	private LocalDate lastUpdated;
+	private boolean isShared;
+	private String shareToken;
 
-    public String getTitle() {
-        return title;
-    }
+	@ElementCollection
+	private List<String> destinations;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	@ElementCollection
+	private List<String> activities;
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+	@ElementCollection
+	private List<UUID> collaborators;
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
+	@ElementCollection
+	private List<String> bookings; // Booking details from external API
 
-    public LocalDate getEndDate() {
-        return endDate;
-    }
+	// Getters and Setters
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public List<String> getDestinations() {
-        return destinations;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public void setDestinations(List<String> destinations) {
-        this.destinations = destinations;
-    }
+	public UUID getUserId() {
+		return userId;
+	}
 
-    public List<String> getActivities() {
-        return activities;
-    }
+	public void setUserId(UUID userId) {
+		this.userId = userId;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
 
-    public void setActivities(List<String> activities) {
-        this.activities = activities;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public String getNotes() {
-        return notes;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public List<UUID> getCollaborators() {
-        return collaborators;
-    }
+	public LocalDate getStartDate() {
+		return startDate;
+	}
 
-    public void setCollaborators(List<UUID> collaborators) {
-        this.collaborators = collaborators;
-    }
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
 
-    public LocalDate getLastUpdated() {
-        return lastUpdated;
-    }
+	public LocalDate getEndDate() {
+		return endDate;
+	}
 
-    public void setLastUpdated(LocalDate lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
+	}
 
-    public boolean isShared() {
-        return isShared;
-    }
+	public List<String> getDestinations() {
+		return destinations;
+	}
 
-    public void setShared(boolean shared) {
-        isShared = shared;
-    }
+	public void setDestinations(List<String> destinations) {
+		this.destinations = destinations;
+	}
 
-    public String getShareToken() {
-        return shareToken;
-    }
+	public List<String> getActivities() {
+		return activities;
+	}
 
-    public void setShareToken(String shareToken) {
-        this.shareToken = shareToken;
-    }
+	public void setActivities(List<String> activities) {
+		this.activities = activities;
+	}
 
-    public List<String> getBookings() {
-        return bookings;
-    }
+	public String getNotes() {
+		return notes;
+	}
 
-    public void setBookings(List<String> bookings) {
-        this.bookings = bookings;
-    }
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
 
+	public List<UUID> getCollaborators() {
+		return collaborators;
+	}
 
-    
+	public void setCollaborators(List<UUID> collaborators) {
+		this.collaborators = collaborators;
+	}
 
-    private UUID userId;
-    private String title;
-    private LocalDate startDate;
-    private LocalDate endDate;
+	public LocalDate getLastUpdated() {
+		return lastUpdated;
+	}
 
-    @ElementCollection
-    private List<String> destinations;
+	public void setLastUpdated(LocalDate lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
 
-    @ElementCollection
-    private List<String> activities;
+	public boolean isShared() {
+		return isShared;
+	}
 
-    private String notes;
+	public void setShared(boolean shared) {
+		isShared = shared;
+	}
 
-    @ElementCollection
-    private List<UUID> collaborators;
+	public String getShareToken() {
+		return shareToken;
+	}
 
-    private LocalDate lastUpdated;
+	public void setShareToken(String shareToken) {
+		this.shareToken = shareToken;
+	}
 
-    private boolean isShared;
-    private String shareToken;
+	public List<String> getBookings() {
+		return bookings;
+	}
 
-    @ElementCollection
-    private List<String> bookings; // Booking details from external API
+	public void setBookings(List<String> bookings) {
+		this.bookings = bookings;
+	}
 
-    // Getters and Setters
 }

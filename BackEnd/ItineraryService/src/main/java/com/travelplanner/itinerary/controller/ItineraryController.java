@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/itineraries")
+@CrossOrigin(origins = "http://localhost:5174")
 public class ItineraryController {
 
     @Autowired

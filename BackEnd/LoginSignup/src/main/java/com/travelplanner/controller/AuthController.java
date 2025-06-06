@@ -25,7 +25,7 @@ import com.travelplanner.service.EmailService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 public class AuthController {
     @Autowired private EmailService emailService;
     @Autowired private PasswordEncoder passwordEncoder;

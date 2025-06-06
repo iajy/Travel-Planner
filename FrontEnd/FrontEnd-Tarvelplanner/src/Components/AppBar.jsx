@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { motion } from "motion/react";
 
+import { useNavigate } from "react-router-dom";
+
 const AppBar = () => {
   const [signOpen, setSignOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -109,18 +111,23 @@ const AppBar = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
+  const navigate = useNavigate();
+  const handlePages =(url) =>{
+    navigate(url);
+  }
+
   return (
     <div>
-      <div className="flex justify-between items-center p-4 bg-green-500/50">
+      <div className="fixed w-full z-30 flex justify-between items-center p-4 bg-gradient-to-r from-green-200 via-green-300 to-green-400">
         <div className="text-3xl text-white font-bold">
           <span className="text-green-700">Travel</span>
           <span>-Planner</span>
         </div>
         <div>
           <ul className="flex gap-5 text-white font-medium">
-            <button className="px-3 py-2">Home</button>
-            <button className="px-3 py-2" onClick={() => document.getElementById("destination")?.scrollIntoView({ behavior: "smooth" })}>Destination</button>
-            <button className="px-3 py-2">Tickects</button>
+            <button className="px-3 py-2" onClick={() => handlePages("/")}>Home</button>
+            <button className="px-3 py-2" onClick={() => document.getElementById("destination")?.scrollIntoView({ behavior: "smooth" })}>Destinations</button>
+            <button className="px-3 py-2" onClick={()=>handlePages("./ticket")}>Tickets</button>
             <button className="px-3 py-2">Bookings</button>
 
             {localStorage.getItem("jwtToken") ? (
@@ -129,7 +136,11 @@ const AppBar = () => {
                   {localStorage.getItem("username")?.charAt(0).toUpperCase() ||
                     "U"}
                 </button>
-                <div className="absolute right-0 hidden group-hover:block bg-white shadow-lg rounded z-50">
+                <div className="absolute w-50 right-0 hidden group-hover:block bg-white shadow-lg rounded z-50">
+                  <button 
+                  className="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left rounded"
+                  onClick={()=>handlePages("./myitinary")}
+                  >My Itineary</button>
                   <button
                     onClick={() => {
                       localStorage.removeItem("jwtToken");
@@ -140,6 +151,7 @@ const AppBar = () => {
                   >
                     Logout
                   </button>
+                  
                 </div>
               </div>
             ) : (
@@ -153,13 +165,7 @@ const AppBar = () => {
 
       {loginOpen && (
         <>
-          {/* <div className=" h-screen w-screen flex justify-center items-center absolute"> */}
             <div className="h-screen w-screen flex justify-center items-center absolute ">
-            {/* <img
-              src=".\src\assets\background_visual-85f87405.svg"
-              alt=""
-              className=" h-screen object-cover absolute -z-10 "
-            /> */}
             <motion.div
               initial={{ opacity: 0, y: -100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -184,7 +190,6 @@ const AppBar = () => {
                 />
 
                 <button
-                  // type="submit"
                   onClick={handleLogin}
                   className="rounded-full p-3 bg-green-600/50"
                 >
@@ -213,14 +218,11 @@ const AppBar = () => {
               </p>
             </motion.div>
           </div>
-
-          {/* </div> */}
         </>
       )}
 
       {signOpen && (
         <>
-          {/* <div className="h-screen w-screen flex justify-center items-center absolute"> */}
             <div className="h-screen w-screen flex justify-center items-center absolute">
             <motion.div
               initial={{ opacity: 0, y: -100 }}
@@ -305,9 +307,9 @@ const AppBar = () => {
               </p>
             </motion.div>
           </div>
-          {/* </div> */}
         </>
       )}
+      
     </div>
   );
 };
