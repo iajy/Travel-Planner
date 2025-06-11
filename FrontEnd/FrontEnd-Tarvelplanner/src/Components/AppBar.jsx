@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { motion } from "motion/react";
 
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const AppBar = () => {
   const [signOpen, setSignOpen] = useState(false);
@@ -14,6 +14,12 @@ const AppBar = () => {
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+
+  const [sideBar, setSideBar] = useState(false);
+
+  const [admin, setAdmin] = useState(false);
+
+  // const navigate = useNavigate();
 
   const loginOverlay = () => {
     setLoginOpen(true);
@@ -82,9 +88,16 @@ const AppBar = () => {
       });
       const token = res.data.token;
       const username = res.data.username;
+      const userId = res.data.userId;
+
+      localStorage.setItem("userId", userId);
+
       localStorage.setItem("username", username);
 
       localStorage.setItem("jwtToken", token);
+
+      // console.log("User ID after login:", localStorage.getItem("userId"));
+
       alert("Login successful");
       closeLogin();
     } catch (err) {
@@ -107,14 +120,33 @@ const AppBar = () => {
     }
   };
 
+  const handleAdmin = async (userId) => {
+    try {
+      const response = await axios.get("http://localhost:8080/auth/user-role", {
+        params: { userId },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+        },
+      });
+      
+      // console.log(response.data);
+
+      if (response.data.includes("ADMIN")) {
+        // navigate("/admin");
+        setAdmin(true);
+      } else {
+        // alert("You are not an admin!");
+        setAdmin(false);
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong while checking the role.");
+    }
+  };
+
   const googleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
-
-  const navigate = useNavigate();
-  const handlePages =(url) =>{
-    navigate(url);
-  }
 
   return (
     <div>
@@ -125,34 +157,80 @@ const AppBar = () => {
         </div>
         <div>
           <ul className="flex gap-5 text-white font-medium">
-            <button className="px-3 py-2" onClick={() => handlePages("/")}>Home</button>
-            <button className="px-3 py-2" onClick={() => document.getElementById("destination")?.scrollIntoView({ behavior: "smooth" })}>Destinations</button>
-            <button className="px-3 py-2" onClick={()=>handlePages("./ticket")}>Tickets</button>
-            <button className="px-3 py-2">Bookings</button>
+            <Link to={"/"}>
+              <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+                Home
+              </button>
+            </Link>
+            <button
+              className="px-3 py-2 rounded-full hover:bg-green-600/60"
+              onClick={() =>
+                document
+                  .getElementById("destination")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              Destinations
+            </button>
+            <Link to={"/ticket"}>
+              <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+                Tickets
+              </button>
+            </Link>
+
+            <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+              Bookings
+            </button>
 
             {localStorage.getItem("jwtToken") ? (
-              <div className="relative group">
-                <button className="w-10 h-10 rounded-full bg-green-700 text-white font-bold">
+              <div className="relative ">
+                <button
+                  onClick={() => {
+                    setSideBar(!sideBar);
+                    handleAdmin(localStorage.getItem("userId"));
+                  }}
+                  className="w-10 h-10 rounded-full bg-green-700 text-white font-bold"
+                >
                   {localStorage.getItem("username")?.charAt(0).toUpperCase() ||
                     "U"}
                 </button>
-                <div className="absolute w-50 right-0 hidden group-hover:block bg-white shadow-lg rounded z-50">
-                  <button 
-                  className="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left rounded"
-                  onClick={()=>handlePages("./myitinary")}
-                  >My Itineary</button>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("jwtToken");
-                      localStorage.removeItem("username");
-                      window.location.reload();
-                    }}
-                    className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                {sideBar && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 5, y: -5 }}
+                    animate={{ opacity: 1, x: 0, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute w-50 right-2 top-12 bg-white shadow-lg rounded z-50"
                   >
-                    Logout
-                  </button>
-                  
-                </div>
+                    <Link to={"/myitineary"}>
+                      <button className="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left rounded">
+                        My Itineary
+                      </button>
+                    </Link>
+                    {admin && (
+                      <Link to={"/admin"}>
+                        <button
+                          className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left rounded"
+                          // onClick={() =>
+                          //   handleAdmin(localStorage.getItem("userId"))
+                          // }
+                        >
+                          Admin
+                        </button>
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("jwtToken");
+                        localStorage.removeItem("username");
+                        window.location.href = "/";
+                      }}
+                      className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                    >
+                      Logout
+                    </button>
+                  </motion.div>
+                )}
               </div>
             ) : (
               <button className="px-3 py-2" onClick={loginOverlay}>
@@ -165,7 +243,7 @@ const AppBar = () => {
 
       {loginOpen && (
         <>
-            <div className="h-screen w-screen flex justify-center items-center absolute ">
+          <div className="h-screen w-screen flex justify-center items-center absolute ">
             <motion.div
               initial={{ opacity: 0, y: -100 }}
               animate={{ opacity: 1, y: 0 }}
@@ -223,14 +301,14 @@ const AppBar = () => {
 
       {signOpen && (
         <>
-            <div className="h-screen w-screen flex justify-center items-center absolute">
+          <div className="h-screen w-screen flex justify-center items-center absolute">
             <motion.div
               initial={{ opacity: 0, y: -100 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
               className=" bg-green-300 rounded-xl flex justify-between"
             >
-              <form className="flex flex-col gap-5 p-8 ">
+              <div className="flex flex-col gap-5 p-8 ">
                 <input
                   type="email"
                   placeholder="Email"
@@ -270,26 +348,27 @@ const AppBar = () => {
                 )}
                 {flag && (
                   <>
-                    <input
-                      type="text"
-                      placeholder="Username"
-                      className="bg-white rounded-full p-2"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      className="bg-white rounded-full p-2"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button
-                      onClick={register}
-                      className="rounded-full p-3 bg-green-600/50"
-                    >
-                      SignUp
-                    </button>
+                    <form onSubmit={register} className="flex flex-col gap-5">
+                      <input
+                        required
+                        type="text"
+                        placeholder="Username"
+                        className="bg-white rounded-full p-2"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                      <input
+                        required
+                        type="password"
+                        placeholder="Password"
+                        className="bg-white rounded-full p-2"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button className="rounded-full p-3 bg-green-600/50">
+                        SignUp
+                      </button>
+                    </form>
                   </>
                 )}
                 <p>
@@ -301,7 +380,7 @@ const AppBar = () => {
                     Login
                   </span>
                 </p>
-              </form>
+              </div>
               <p className="text-2xl cursor-pointer" onClick={closeLogin}>
                 X
               </p>
@@ -309,7 +388,6 @@ const AppBar = () => {
           </div>
         </>
       )}
-      
     </div>
   );
 };

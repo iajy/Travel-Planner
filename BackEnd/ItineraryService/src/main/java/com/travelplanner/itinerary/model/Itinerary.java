@@ -13,7 +13,7 @@ public class Itinerary {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
 
-	private UUID userId;
+	private long userId;
 	private String username;
 	private String title;
 	private LocalDate startDate;
@@ -48,11 +48,11 @@ public class Itinerary {
 		this.id = id;
 	}
 
-	public UUID getUserId() {
+	public long getUserId() {
 		return userId;
 	}
 
-	public void setUserId(UUID userId) {
+	public void setUserId(long userId) {
 		this.userId = userId;
 	}
 	

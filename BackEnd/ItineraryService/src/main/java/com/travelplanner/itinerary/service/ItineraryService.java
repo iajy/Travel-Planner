@@ -23,8 +23,8 @@ public class ItineraryService {
         return repository.save(itinerary);
     }
 
-    public Optional<Itinerary> get(UUID id) {
-        return repository.findById(id);
+    public List<Itinerary> get(long id) {
+        return repository.findByUserId(id);
     }
 
     public Optional<Itinerary> getByShareToken(String token) {

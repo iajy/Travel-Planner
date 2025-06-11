@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.travelplanner.config.JwtUtils;
 import com.travelplanner.entity.AppUser;
+import com.travelplanner.entity.UserDto;
 import com.travelplanner.repository.UserRepository;
 import com.travelplanner.service.EmailService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
     @Autowired private EmailService emailService;
     @Autowired private PasswordEncoder passwordEncoder;
@@ -85,7 +88,8 @@ public class AuthController {
         }
 
         String token = jwtUtils.generateToken(user);
-        return ResponseEntity.ok(Map.of("token", token,"username", user.getUsername()));
+        System.out.println(user.getId());
+        return ResponseEntity.ok(Map.of("token", token,"username", user.getUsername(),"userId",user.getId()));
     }
 
     @GetMapping("/profile")
@@ -97,5 +101,46 @@ public class AuthController {
             "roles", user.getRoles()
         ));
     }
+    
+    @GetMapping("/user-role")
+    public ResponseEntity<?> getUserRoleById(@RequestParam Long userId) {
+        AppUser user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        return ResponseEntity.ok(user.getRoles());
+    }
+    
+    @GetMapping("/all-users")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<AppUser> users = userRepository.findAll();
+        
+        // Map each user to a UserDto
+        List<UserDto> userDtos = users.stream().map(user -> {
+            UserDto dto = new UserDto();
+            dto.setId(user.getId());
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setRoles(user.getRoles());
+            // add other safe fields...
+            return dto;
+        }).toList();
+        
+        return ResponseEntity.ok(userDtos);
+    }
+    
+    @DeleteMapping("/delete-user/{id}")
+    public ResponseEntity <?> deleteUser(@PathVariable  Long id){
+    	
+    	AppUser user = userRepository.findById(id).orElse(null);
+    	if(user==null) {
+    		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    	}
+    	userRepository.delete(user);
+    	return ResponseEntity.ok("User deleted");
+    	
+    }
+
+
 }
 

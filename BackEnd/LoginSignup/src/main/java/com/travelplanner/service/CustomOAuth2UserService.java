@@ -8,14 +8,12 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import com.travelplanner.config.JwtUtils;
 import com.travelplanner.entity.AppUser;
 import com.travelplanner.repository.UserRepository;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Autowired private UserRepository userRepo;
-    @Autowired private JwtUtils jwtUtils;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import Destination from "./Destination";
 import axios from "axios";
@@ -11,10 +11,13 @@ const Hero = () => {
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("jwtToken");
 
+  const userId = localStorage.getItem("userId");
+
   const [openForm, setOpenForm] = useState(false);
 
   const [itinerary, setItinerary] = useState({
     username: username,
+    userId: userId,
     title: "",
     startDate: "",
     endDate: "",
@@ -45,6 +48,7 @@ const Hero = () => {
         ...prev,
         [name]: value,
       }));
+      setStartDate(itinerary.startDate);
     }
   };
 
@@ -58,15 +62,51 @@ const Hero = () => {
       );
       // console.log(res.data);
       const uuid = res.data.id;
-      localStorage.setItem("UserId", uuid);
+      localStorage.setItem("uuid", uuid);
+
+      setItinerary({
+        username: username, // keep username
+        userId: userId, // keep userId
+        title: "",
+        startDate: "",
+        endDate: "",
+        destinations: [],
+        activities: [],
+        notes: "",
+        collaborators: [],
+      });
+
+      alert("Itinerary created successfully!");
+      setOpenForm(false);
     } catch (err) {
       alert(err);
     }
   };
 
+  const [startDate, setStartDate] = useState();
+
   const { ref, inView } = useInView({
     threshold: 0.5,
   });
+
+  const formRef = useRef();
+
+  // Close openEdit when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If openEdit is true and click is outside the form
+      if (
+        openForm &&
+        formRef.current &&
+        !formRef.current.contains(event.target)
+      ) {
+        setOpenForm(false); // Close the edit form
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openForm]);
 
   return (
     <>
@@ -106,6 +146,7 @@ const Hero = () => {
             {openForm && (
               <>
                 <motion.div
+                  ref={formRef}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7 }}
@@ -177,11 +218,14 @@ const Hero = () => {
                               required
                               type="date"
                               name="endDate"
-                              min={
-                                new Date(Date.now() + 86400000)
+                              min={(() => {
+                                const startDate = itinerary.startDate
+                                  ? new Date(itinerary.startDate)
+                                  : new Date();
+                                return new Date(startDate.getTime() + 86400000)
                                   .toISOString()
-                                  .split("T")[0]
-                              }
+                                  .split("T")[0];
+                              })()}
                               value={itinerary.endDate}
                               onChange={onChangeInput}
                               className="rounded-full p-2 bg-blue-300/50 font-normal"

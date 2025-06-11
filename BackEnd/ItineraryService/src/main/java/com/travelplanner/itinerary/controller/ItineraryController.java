@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/itineraries")
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ItineraryController {
 
     @Autowired
@@ -28,10 +28,10 @@ public class ItineraryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Itinerary> get(@PathVariable UUID id) {
-        Optional<Itinerary> itinerary = service.get(id);
-        return itinerary.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<Itinerary>> get(@PathVariable long id) {
+//    	System.out.println("Received ID: " + id);
+        List<Itinerary> itineraries = service.get(id);
+        return ResponseEntity.ok(itineraries);
     }
 
     @GetMapping("/share/{token}")

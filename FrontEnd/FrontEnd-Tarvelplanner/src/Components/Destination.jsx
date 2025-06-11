@@ -20,6 +20,7 @@ const Destination = () => {
         id="destination"
         className="flex flex-col justify-center items-center gap-3"
       >
+        <img src="src\assets\background_visual-85f87405.svg" className="absolute object-cover w-full " alt="" />
         <h2 className="text-4xl font-bold text-green-700/80 text-shadow-lg/20">
           Top Destinations
         </h2>

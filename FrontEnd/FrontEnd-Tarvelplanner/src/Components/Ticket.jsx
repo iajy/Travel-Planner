@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import AppBar from "./AppBar";
+import Footer from "./Footer";
+
 import { motion } from "motion/react";
 
 const Ticket = () => {
@@ -107,7 +109,7 @@ const Ticket = () => {
     }
 
     try {
-      const itineraryId = localStorage.getItem("UserId"); 
+      const itineraryId = localStorage.getItem("uuid");
       const price = flight.price.total;
 
       const bookingRequest = {
@@ -309,6 +311,7 @@ const Ticket = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

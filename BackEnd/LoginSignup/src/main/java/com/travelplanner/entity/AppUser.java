@@ -27,7 +27,7 @@ public class AppUser implements UserDetails {
     
     private String username;
     
-    @Column(nullable=false)
+    
     private String password;
 
     public Long getId() {
@@ -62,14 +62,18 @@ public class AppUser implements UserDetails {
 		this.password = password;
 	}
 
-	@ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
+	    List<GrantedAuthority> authorities = new ArrayList<>();
+	    for (String role : roles) {
+	        authorities.add(() -> role); // Lambda for simplicity
+	    }
+	    return authorities;
 	}
+
 
 	@Override
 	public String getPassword() {
