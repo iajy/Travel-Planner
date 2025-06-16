@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import AppBar from "./AppBar";
 import axios from "axios";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
 const MyItineary = () => {
@@ -11,88 +11,21 @@ const MyItineary = () => {
   const [itineraries, setItineraries] = useState([]);
   const [itinerariesCard, setItinerariesCard] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [id, setId] = useState();
+  const [id, setId] = useState(null);
   const [uuid, setUuid] = useState(null);
 
-  const handleEdit = (id, uuid) => {
-    setUuid(uuid);
-    setId(id);
-    setOpenEdit(!openEdit);
-  };
-
-  const formRef = useRef();
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        openEdit &&
-        formRef.current &&
-        !formRef.current.contains(event.target)
-      ) {
-        setOpenEdit(false); 
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openEdit]);
-
-  const handleFetch = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/api/itineraries/${userId}`
-      );
-
-      setItinerariesCard(!itinerariesCard);
-
-      setItineraries(response.data); 
-      console.log(response);
-    } catch (error) {
-      console.error("Error fetching:", error);
-    }
-  };
-
-  const itinearyUpdate = async () => {
-    try {
-      const updatedItinerary = itineraries[id];
-      await axios.put(
-        `http://localhost:8000/api/itineraries/${uuid}`,
-        updatedItinerary
-      );
-      // console.log(res.data);
-      setOpenEdit(false);
-      alert("Updated");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const itineraryDelete = async (deleteId) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/itineraries/${deleteId}`);
-      setItinerariesCard(!itinerariesCard);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  // Handle edit form input change
   const onChangeInput = (e) => {
     const { name, value } = e.target;
-
     setItineraries((prevItineraries) =>
       prevItineraries.map((itinerary, index) => {
         if (index === id) {
-          if (name === "destination" || name === "interests") {
-            return {
-              ...itinerary,
-              [name]: value.split(",").map((item) => item.trim()),
-            };
-          } else {
-            return {
-              ...itinerary,
-              [name]: value,
-            };
-          }
+          return {
+            ...itinerary,
+            [name]: ["destination", "interests"].includes(name)
+              ? value.split(",").map((item) => item.trim())
+              : value,
+          };
         } else {
           return itinerary;
         }
@@ -100,111 +33,196 @@ const MyItineary = () => {
     );
   };
 
-  const { ref, inView } = useInView({
-    threshold: 0.5,
-  });
+  // Toggle edit mode
+  const handleEdit = (index, uuid) => {
+    setId(index);
+    setUuid(uuid);
+    setOpenEdit(!openEdit);
+  };
+
+  // Close edit form when clicking outside
+  const formRef = useRef();
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        openEdit &&
+        formRef.current &&
+        !formRef.current.contains(event.target)
+      ) {
+        setOpenEdit(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, [openEdit]);
+
+  // Fetch itineraries
+  const handleFetch = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/itineraries/${userId}`
+      );
+      setItineraries(response.data);
+      setItinerariesCard(!itinerariesCard);
+    } catch (error) {
+      console.error("Error fetching:", error);
+    }
+  };
+
+  // Update itinerary
+  const itinearyUpdate = async () => {
+    try {
+      const updatedItinerary = itineraries[id];
+      await axios.put(
+        `http://localhost:8000/api/itineraries/${uuid}`,
+        updatedItinerary
+      );
+      setOpenEdit(false);
+      alert("Itinerary Updated!");
+    } catch (error) {
+      console.log("Update Error:", error);
+    }
+  };
+
+  // Delete itinerary
+  const itineraryDelete = async (deleteId) => {
+    if (window.confirm("Are you sure you want to delete this itinerary?")) {
+      try {
+        await axios.delete(
+          `http://localhost:8000/api/itineraries/${deleteId}`
+        );
+        setItinerariesCard(!itinerariesCard);
+      } catch (error) {
+        console.log("Delete Error:", error);
+      }
+    }
+  };
+
+  const { ref, inView } = useInView({ threshold: 0.8 });
+
+  
 
   return (
-    <div>
+    <>
       <AppBar />
       <section>
+        {/* Background Image */}
         <img
           src=".\src\assets\background_visual-85f87405.svg"
           alt=""
-          className="w-screen object-cover absolute -z-10 "
+          className="w-screen h-screen object-cover absolute -z-10"
         />
+
+        {/* Hero Text Section */}
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 100 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="h-full py-20 flex flex-col justify-center items-center"
+          className="h-full py-20 flex flex-col justify-center items-center bg-black/30 backdrop-blur-sm"
         >
-          <div className="text-center flex flex-col gap-2 items-center">
-            <span className=" text-6xl font-bold  text-green-700/80 text-shadow-lg/20">
+          <div className="text-center flex flex-col gap-4 items-center">
+            <h1 className="text-5xl font-bold text-indigo-700 drop-shadow-md">
               Hi {username}
-            </span>
-            <p className="text-2xl font-bold text-blue-950 text-shadow-lg/20">
+            </h1>
+            <p className="text-2xl font-semibold text-blue-800 drop-shadow-sm">
               Your travel plans await you here
             </p>
             <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 1.02 }}
-              className="font-semibold rounded-full py-2 px-4 bg-green-600/90"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleFetch}
+              className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-md hover:shadow-lg transition-all"
             >
-              Show the Itinearies
+              Show Itineraries
             </motion.button>
           </div>
         </motion.div>
-      
+      </section>
+
+      {/* Edit Form Modal */}
       {openEdit && (
-        <section ref={formRef} className="flex justify-center z-30">
-          <div className="absolute flex flex-col items-center justify-center h-1/2 bg-gray-100/90  rounded-3xl shadow-lg/20 hover:scale-101 ">
+        <section  className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            ref={formRef}
+            className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-5xl mx-4 relative"
+          >
+            <h2 className="text-2xl font-semibold mb-6 text-center">Edit Itinerary</h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 itinearyUpdate();
               }}
-              className="flex flex-col items-center"
+              className="space-y-6"
             >
-              <table className="border-separate border-spacing-8">
+              <table className="w-full border-separate border-spacing-4">
                 <tbody>
-                  <tr>
+                  <tr className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <td>
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Destination
+                      </label>
                       <input
                         required
                         type="text"
                         name="destination"
                         placeholder="Where to go"
-                        value={itineraries[id].destination.join(", ")}
+                        value={itineraries[id]?.destination?.join(", ") || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                     <td>
-                      <label className="px-1 font-medium">
-                        Starting Date :
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Starting Date
                       </label>
-                    </td>
-                    <td>
                       <input
                         required
                         type="date"
                         name="startDate"
-                        value={itineraries[id].startDate}
                         min={new Date().toISOString().split("T")[0]}
+                        value={itineraries[id]?.startDate || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50 font-normal"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                     <td>
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Title of the Trip
+                      </label>
                       <input
                         required
                         type="text"
                         name="title"
                         placeholder="Title Of The Trip"
-                        value={itineraries[id].title}
+                        value={itineraries[id]?.title || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                   </tr>
-                  <tr>
+                  <tr className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <td>
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Interests (optional)
+                      </label>
                       <input
                         type="text"
                         name="interests"
-                        placeholder="Interests"
-                        value={itineraries[id].interests.join(", ")}
+                        placeholder="e.g., hiking, food, museums"
+                        value={itineraries[id]?.interests?.join(", ") || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                     <td>
-                      <label className="px-1 font-medium">Ending Date : </label>
-                    </td>
-                    <td>
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Ending Date
+                      </label>
                       <input
                         required
                         type="date"
@@ -214,68 +232,70 @@ const MyItineary = () => {
                             .toISOString()
                             .split("T")[0]
                         }
-                        value={itineraries[id].endDate}
+                        value={itineraries[id]?.endDate || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50 font-normal"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                     <td>
+                      <label className="block text-left mb-2 font-medium text-gray-700">
+                        Any Notes
+                      </label>
                       <input
                         type="text"
                         name="notes"
-                        placeholder="Any Notes"
-                        value={itineraries[id].notes}
+                        placeholder="Notes or special requests"
+                        value={itineraries[id]?.notes || ""}
                         onChange={onChangeInput}
-                        className="rounded-full p-2 bg-blue-300/50"
+                        className="w-full rounded-full px-4 py-2 bg-blue-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 1.02 }}
-                className="font-semibold  rounded-full p-2 bg-green-600/90 cursor-pointer"
-                type="submit"
-              >
-                Update
-              </motion.button>
+
+              <div className="flex justify-center mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-semibold shadow-md transition-all"
+                >
+                  Update
+                </motion.button>
+              </div>
             </form>
-          </div>
+          </motion.div>
         </section>
       )}
-      </section>
-      <div className="flex justify-center">
-        {itinerariesCard && (
-          <div className="md:grid-cols-2 grid grid-cols-1 gap-10 mx-10 my-4 w-3/4">
+
+      {/* Itinerary Cards */}
+      {itinerariesCard && (
+        <div className="max-w-6xl mx-auto mt-10 px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {itineraries.map((item, index) => (
               <motion.div
-                initial={{ opacity: 0, y: -100 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
                 key={item.id}
-                className="flex flex-col items-start p-4 shadow rounded my-2 bg-gray-200/50 gap-2"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-6 hover:shadow-xl transition-shadow"
               >
-                <h2 className="text-xl font-bold">{item.title}</h2>
-                <p>Start Date: {item.startDate}</p>
-                <p>End Date: {item.endDate}</p>
-                <p>Destination: {item.destination.join(", ")}</p>
-                <p>Bookings: {item.bookings}</p>
-                <div className="flex gap-5">
+                <h2 className="text-2xl font-bold text-gray-800 mb-3">{item.title}</h2>
+                <p className="text-gray-600"><strong>Start Date:</strong> {item.startDate}</p>
+                <p className="text-gray-600"><strong>End Date:</strong> {item.endDate}</p>
+                <p className="text-gray-600"><strong>Destination:</strong> {item.destination.join(", ")}</p>
+                <p className="text-gray-600"><strong>Bookings:</strong> {item.bookings || "None"}</p>
+                <div className="mt-4 flex items-end gap-4">
                   <button
-                    className="text-white bg-green-500 rounded px-4 py-2"
-                    onClick={() => {
-                      document
-                        .getElementById("editForm")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                      handleEdit(index, item.id);
-                    }}
+                    onClick={() => handleEdit(index, item.id)}
+                    className="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors"
                   >
                     Edit
                   </button>
                   <button
-                    className="text-white bg-red-500 rounded px-4 py-2"
                     onClick={() => itineraryDelete(item.id)}
+                    className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-full transition-colors"
                   >
                     Delete
                   </button>
@@ -283,9 +303,9 @@ const MyItineary = () => {
               </motion.div>
             ))}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

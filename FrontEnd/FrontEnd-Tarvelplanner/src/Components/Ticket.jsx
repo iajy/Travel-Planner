@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import AppBar from "./AppBar";
 import Footer from "./Footer";
-
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 const Ticket = () => {
   const [origin, setOrigin] = useState("");
@@ -14,21 +13,16 @@ const Ticket = () => {
   const [children, setChildren] = useState(0);
   const [flights, setFlights] = useState([]);
   const [locationNames, setLocationNames] = useState({});
-
   const [loading, setLoading] = useState(false);
-
   const token = localStorage.getItem("jwtToken");
 
   const fetchIataCode = async (locationName) => {
     try {
       const response = await axios.get(
         "http://localhost:8000/api/flights/iata",
-        {
-          params: { keyword: locationName },
-        }
+        { params: { keyword: locationName } }
       );
-      const locationData = response.data.data[0];
-      return locationData ? locationData.iataCode : locationName;
+      return response.data.data[0]?.iataCode || locationName;
     } catch (error) {
       console.error("IATA code fetch error:", error);
       return locationName;
@@ -39,14 +33,10 @@ const Ticket = () => {
     try {
       const response = await axios.get(
         "http://localhost:8000/api/flights/location",
-        {
-          params: { iataCode },
-        }
+        { params: { iataCode } }
       );
-      const locationData = response.data.data[0];
-      return locationData
-        ? locationData.address.cityName + " - " + locationData.name
-        : iataCode;
+      const data = response.data.data[0];
+      return data ? `${data.address.cityName} - ${data.name}` : iataCode;
     } catch (error) {
       console.error("Location name error:", error);
       return iataCode;
@@ -55,16 +45,16 @@ const Ticket = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (token != null) {
-      setLoading(true);
-    } else {
-      alert("Login First..");
+    if (!token) {
+      alert("Please log in first!");
+      return;
     }
+
+    setLoading(true);
 
     try {
       const originCode = await fetchIataCode(origin);
       const destinationCode = await fetchIataCode(destination);
-
       const response = await axios.get("http://localhost:8000/api/flights", {
         params: {
           origin: originCode,
@@ -77,7 +67,6 @@ const Ticket = () => {
       });
 
       const flightData = response.data.data || [];
-
       const locationPromises = flightData.flatMap((flight) => {
         const offer = flight.itineraries[0].segments[0];
         return [
@@ -92,7 +81,6 @@ const Ticket = () => {
 
       const locations = await Promise.all(locationPromises);
       const mergedLocations = Object.assign({}, ...locations);
-
       setLocationNames(mergedLocations);
       setFlights(flightData);
     } catch (error) {
@@ -111,7 +99,6 @@ const Ticket = () => {
     try {
       const itineraryId = localStorage.getItem("uuid");
       const price = flight.price.total;
-
       const bookingRequest = {
         type: "Flight",
         provider: flight.validatingAirlineCodes[0],
@@ -120,7 +107,7 @@ const Ticket = () => {
           locationNames[flight.itineraries[0].segments[0].departure.iataCode]
         } to ${
           locationNames[flight.itineraries[0].segments[0].arrival.iataCode]
-        } on ${departureDate} Price :$${price}`,
+        } on ${departureDate} Price: $${price}`,
       };
 
       const response = await axios.post(
@@ -147,164 +134,221 @@ const Ticket = () => {
   return (
     <>
       <AppBar />
-      <img
-          src=".\src\assets\background_visual-85f87405.svg"
-          alt=""
-          className="w-screen h-screen object-cover absolute -z-10 "
+      <div className="p-4 py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <h1 className="text-4xl font-extrabold text-indigo-600 tracking-tight mb-2">
+            Flight Search
+          </h1>
+          <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            Discover the best flight deals with our smart search feature.
+          </p>
+        </motion.div>
+
+        {/* Airplane Animation */}
+        <motion.img
+          initial={{ x: 250, y: -250 }}
+          animate={{ x: 0, y: 0 }}
+          transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+          src="src/assets/airplane-297578_1280.webp"
+          alt="Airplane"
+          className="absolute top-20 right-10 w-40 h-40 opacity-10 pointer-events-none -z-10"
         />
-      <div className="p-4 py-20">
-        <p className="text-xl text-center text-gray-500">
-          Discover the best flight deals with our smart search feature.
-        </p>
-        <h1 className="text-4xl text-center font-bold text-green-700/80 text-shadow-lg/20 mb-4">
-          Flight Search
-        </h1>
-        <div className="mb-4  flex flex-col items-center gap-2 ">
-          <form onSubmit={handleSearch} className="flex flex-col items-center">
-            <table className="border-separate border-spacing-6">
-              <tbody>
-                <tr>
-                  <td>
-                    <input
-                      required
-                      className=" bg-blue-300/50 rounded-full p-2"
-                      placeholder="Origin (city or IATA)"
-                      value={origin}
-                      onChange={(e) => setOrigin(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <label htmlFor="">Departure Date :</label>
-                  </td>
-                  <td>
-                    <input
-                      required
-                      type="date"
-                      className="bg-blue-300/50 rounded-full p-2"
-                      min={new Date().toISOString().split("T")[0]}
-                      value={departureDate}
-                      onChange={(e) => setDepartureDate(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <label htmlFor="">Adults :</label>
-                  </td>
-                  <td>
-                    <input
-                      required
-                      type="number"
-                      className="bg-blue-300/50 rounded-full p-2"
-                      placeholder="Adults"
-                      value={adults}
-                      min="1"
-                      onChange={(e) => setAdults(e.target.value)}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <input
-                      required
-                      className="bg-blue-300/50 rounded-full p-2"
-                      placeholder="Destination (city or IATA)"
-                      value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <label htmlFor="">Return Date :</label>
-                  </td>
-                  <td>
-                    <input
-                      type="date"
-                      className="bg-blue-300/50 rounded-full p-2"
-                      min={
-                        new Date(Date.now() + 86400000)
-                          .toISOString()
-                          .split("T")[0]
-                      }
-                      value={returnDate}
-                      onChange={(e) => setReturnDate(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <label htmlFor="">Children :</label>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      className="bg-blue-300/50 rounded-full p-2"
-                      placeholder="Children"
-                      value={children}
-                      min="0"
-                      onChange={(e) => setChildren(e.target.value)}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 1.02 }}
-              type="submit"
-              className="font-semibold rounded-full py-2 px-4 bg-green-600/90 cursor-pointer"
-            >
-              Search
-            </motion.button>
+
+        {/* Search Form */}
+        <div className="max-w-5xl mx-auto px-4">
+          <form
+            onSubmit={handleSearch}
+            className="bg-white shadow-lg rounded-2xl p-6 space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label
+                  htmlFor="origin"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Origin (city or IATA)
+                </label>
+                <input
+                  id="origin"
+                  type="text"
+                  placeholder="Enter origin"
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="destination"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Destination (city or IATA)
+                </label>
+                <input
+                  id="destination"
+                  type="text"
+                  placeholder="Enter destination"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="departureDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Departure Date
+                </label>
+                <input
+                  id="departureDate"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  value={departureDate}
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="returnDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Return Date (optional)
+                </label>
+                <input
+                  id="returnDate"
+                  type="date"
+                  min={
+                    new Date(Date.now() + 86400000).toISOString().split("T")[0]
+                  }
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="adults"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Adults
+                </label>
+                <input
+                  id="adults"
+                  type="number"
+                  placeholder="Adults"
+                  value={adults}
+                  min="1"
+                  onChange={(e) => setAdults(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="children"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Children
+                </label>
+                <input
+                  id="children"
+                  type="number"
+                  placeholder="Children"
+                  value={children}
+                  min="0"
+                  onChange={(e) => setChildren(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center mt-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+              >
+                Search Flights
+              </motion.button>
+            </div>
           </form>
+
+          {/* Loader */}
           {loading && (
-            <div className="flex justify-center items-center">
-              <div className="loader border-4 border-green-400 border-t-transparent rounded-full w-8 h-8 animate-spin"></div>
-              <p className="ml-2">Searching...</p>
+            <div className="mt-6 flex justify-center items-center space-x-2 text-gray-600">
+              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <span>Searching flights...</span>
             </div>
           )}
-        </div>
 
-        <div className="flex justify-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Flight Results */}
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {flights.slice(0, 20).map((flight, idx) => {
               const offer = flight.itineraries[0].segments[0];
-              const departure = offer.departure;
-              const arrival = offer.arrival;
               const price = flight.price.total;
 
               return (
-                <div
+                <motion.div
                   key={idx}
-                  className="w-130 text-white border rounded-2xl shadow p-4 bg-gray-700/90 transform transition-transform duration-450 hover:-translate-y-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow"
                 >
-                  <h2 className="text-lg font-bold mb-2">
-                    Airline: {flight.validatingAirlineCodes[0]}
-                  </h2>
-                  <p>
-                    <strong>From:</strong> {locationNames[departure.iataCode]} (
-                    {departure.iataCode})
-                  </p>
-                  <p>
-                    <strong>To:</strong> {locationNames[arrival.iataCode]} (
-                    {arrival.iataCode})
-                  </p>
-                  <p>
-                    <strong>Departure:</strong> {departure.at}
-                  </p>
-                  <p>
-                    <strong>Arrival:</strong> {arrival.at}
-                  </p>
-                  <p>
-                    <strong>Price:</strong> ${price}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 1.02 }}
-                    onClick={() => handleBooking(flight)}
-                    className="font-semibold  rounded-full px-4 py-2 mt-2 bg-green-600/60 cursor-pointer"
-                  >
-                    Book
-                  </motion.button>
-                </div>
+                  <div className="p-5">
+                    <h2 className="text-lg font-bold text-gray-800 mb-3">
+                      {flight.validatingAirlineCodes[0]}
+                    </h2>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <p>
+                        <strong className="text-gray-700">From:</strong>{" "}
+                        {locationNames[offer.departure.iataCode]} (
+                        {offer.departure.iataCode})
+                      </p>
+                      <p>
+                        <strong className="text-gray-700">To:</strong>{" "}
+                        {locationNames[offer.arrival.iataCode]} (
+                        {offer.arrival.iataCode})
+                      </p>
+                      <p>
+                        <strong className="text-gray-700">Departure:</strong>{" "}
+                        {offer.departure.at}
+                      </p>
+                      <p>
+                        <strong className="text-gray-700">Arrival:</strong>{" "}
+                        {offer.arrival.at}
+                      </p>
+                      <p className="font-semibold text-indigo-600">
+                        Price: ${price}
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleBooking(flight)}
+                      className="mt-4 w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors font-medium"
+                    >
+                      Book Now
+                    </motion.button>
+                  </div>
+                </motion.div>
               );
             })}
           </div>
+
+          {/* No Results Message */}
+          {!loading && flights.length === 0 && (
+            <div className="mt-10 text-center text-gray-500 italic">
+              No flights found. Try adjusting your search criteria.
+            </div>
+          )}
         </div>
       </div>
       <Footer />

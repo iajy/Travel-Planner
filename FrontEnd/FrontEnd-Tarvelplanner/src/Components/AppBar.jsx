@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { motion } from "motion/react";
-
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const AppBar = () => {
@@ -9,15 +8,12 @@ const AppBar = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [optOpen, setOtpOpen] = useState(false);
   const [flag, setFlag] = useState(false);
-
+  const [sideBar, setSideBar] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-
-  const [sideBar, setSideBar] = useState(false);
-
-  const [admin, setAdmin] = useState(false);
 
   const loginOverlay = () => {
     setLoginOpen(true);
@@ -33,6 +29,7 @@ const AppBar = () => {
     setLoginOpen(false);
     setSignOpen(false);
     setOtpOpen(false);
+    setFlag(false);
   };
 
   const handleSendOtp = async (e) => {
@@ -52,7 +49,7 @@ const AppBar = () => {
       setOtpOpen(true);
       alert("OTP sent to email");
     } catch (err) {
-      alert(err);
+      alert("Error sending OTP", err);
     }
   };
 
@@ -84,17 +81,10 @@ const AppBar = () => {
         email,
         password,
       });
-      const token = res.data.token;
-      const username = res.data.username;
-      const userId = res.data.userId;
-
-      localStorage.setItem("userId", userId);
-
-      localStorage.setItem("username", username);
-
+      const { token, username, userId } = res.data;
       localStorage.setItem("jwtToken", token);
-
-
+      localStorage.setItem("username", username);
+      localStorage.setItem("userId", userId);
       alert("Login successful");
       closeLogin();
     } catch (err) {
@@ -110,33 +100,24 @@ const AppBar = () => {
         password,
         username,
       });
-      signOverlay(false);
-      loginOverlay(true);
+      setSignOpen(false);
+      setLoginOpen(true);
     } catch (err) {
-      alert("Something wrong", err);
+      alert("Registration failed", err);
     }
   };
 
   const handleAdmin = async (userId) => {
     try {
-      const response = await axios.get("http://localhost:8080/auth/user-role", {
+      const res = await axios.get("http://localhost:8080/auth/user-role", {
         params: { userId },
         headers: {
           Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
         },
       });
-      
-      // console.log(response.data);
-
-      if (response.data.includes("ADMIN")) {
-        setAdmin(true);
-      } else {
-        // alert("You are not an admin!");
-        setAdmin(false);
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Something went wrong while checking the role.");
+      setAdmin(res.data.includes("ADMIN"));
+    } catch (err) {
+      alert("Failed to load role", err);
     }
   };
 
@@ -145,242 +126,242 @@ const AppBar = () => {
   };
 
   return (
-    <div>
-      <div className="fixed w-full z-30 flex justify-between items-center p-4 bg-gradient-to-r from-green-200 via-green-300 to-green-400">
-        <div className="text-3xl text-white font-bold">
-          <span className="text-green-700">Travel</span>
-          <span>-Planner</span>
+    <>
+      {/* Header / App Bar */}
+      <header className="fixed w-full z-50 bg-white/30 backdrop-blur-lg shadow-md border-b border-white/20 px-6 py-4 flex justify-between items-center">
+        <div className="text-3xl font-extrabold text-indigo-600">
+          Travel<span className="text-gray-800">-Planner</span>
         </div>
-        <div>
-          <ul className="flex gap-5 text-white font-medium">
+        <nav>
+          <ul className="flex items-center gap-8 text-sm md:text-base">
             <Link to={"/"}>
-              <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+              <li className="hover:text-indigo-400 transition cursor-pointer">
                 Home
-              </button>
+              </li>
             </Link>
-            <button
-              className="px-3 py-2 rounded-full hover:bg-green-600/60"
+            <li
               onClick={() =>
                 document
                   .getElementById("destination")
                   ?.scrollIntoView({ behavior: "smooth" })
               }
+              className="hover:text-indigo-400 transition cursor-pointer"
             >
               Destinations
-            </button>
+            </li>
             <Link to={"/ticket"}>
-              <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+              <li className="hover:text-indigo-400 transition cursor-pointer">
                 Tickets
-              </button>
+              </li>
             </Link>
-            {/* <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
-              Bookings
-            </button> */}
-
+           
             {localStorage.getItem("jwtToken") ? (
-              <div className="relative ">
+              <div className="relative">
                 <button
                   onClick={() => {
                     setSideBar(!sideBar);
                     handleAdmin(localStorage.getItem("userId"));
                   }}
-                  className="w-10 h-10 rounded-full bg-green-700 text-white font-bold"
+                  className="w-10 h-10 bg-indigo-600 text-white rounded-full text-lg font-bold"
                 >
-                  {localStorage.getItem("username")?.charAt(0).toUpperCase() ||
-                    "U"}
+                  {localStorage.getItem("username") ?.charAt(0).toUpperCase() || "U"}
                 </button>
                 {sideBar && (
                   <motion.div
-                    initial={{ opacity: 0, x: 5, y: -5 }}
-                    animate={{ opacity: 1, x: 0, y: 0 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute w-50 right-2 top-12 bg-white shadow-lg rounded z-50"
+                    className="absolute top-12 right-0 w-48 bg-white text-gray-800 rounded-xl shadow-xl overflow-hidden"
                   >
                     <Link to={"/myitineary"}>
-                      <button className="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 w-full text-left rounded">
-                        My Itineary
-                      </button>
+                      <div className="px-4 py-3 hover:bg-gray-100 cursor-pointer">
+                        My Itinerary
+                      </div>
                     </Link>
                     {admin && (
                       <Link to={"/admin"}>
-                        <button
-                          className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left rounded"
-                        >
-                          Admin
-                        </button>
+                        <div className="px-4 py-3 hover:bg-blue-50 text-blue-600 cursor-pointer">
+                          Admin Panel
+                        </div>
                       </Link>
                     )}
-
-                    <button
+                    <div
                       onClick={() => {
-                        localStorage.removeItem("jwtToken");
-                        localStorage.removeItem("username");
-                        window.location.href = "/";
+                        localStorage.clear();
+                        window.location.reload();
                       }}
-                      className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                      className="px-4 py-3 hover:bg-red-50 text-red-600 cursor-pointer"
                     >
                       Logout
-                    </button>
+                    </div>
                   </motion.div>
                 )}
               </div>
             ) : (
-              <button className="px-3 py-2" onClick={loginOverlay}>
+              <button
+                onClick={loginOverlay}
+                className="ml-4 px-5 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition"
+              >
                 Login
               </button>
             )}
           </ul>
-        </div>
-      </div>
+        </nav>
+      </header>
 
+      {/* Login Modal */}
       {loginOpen && (
-        <>
-          <div className="h-screen w-screen flex justify-center items-center absolute ">
-            <motion.div
-              initial={{ opacity: 0, y: -100 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="bg-green-300 rounded-xl flex justify-center "
-            >
-              <form className="flex flex-col gap-5 p-8 " onSubmit={handleLogin}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="bg-white rounded-full p-2"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="bg-white rounded-full p-2"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                  onClick={handleLogin}
-                  className="rounded-full p-3 bg-green-600/50"
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl relative"
+          >
+            <h2 className="text-2xl font-bold mb-6 text-center text-indigo-600">
+              Login
+            </h2>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-full transition font-medium"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={googleLogin}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full transition font-medium"
+              >
+                Login with Google
+              </button>
+              <p className="text-center text-sm mt-4">
+                Don’t have an account?{" "}
+                <span
+                  onClick={signOverlay}
+                  className="text-indigo-600 hover:underline cursor-pointer"
                 >
-                  Login
-                </button>
+                  Sign up
+                </span>
+              </p>
+            </form>
+            <button
+              onClick={closeLogin}
+              className="absolute top-3 right-4 text-xl font-bold text-gray-500 hover:text-red-500 transition"
+            >
+              &times;
+            </button>
+          </motion.div>
+        </div>
+      )}
 
+      {/* Signup Modal */}
+      {signOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl relative"
+          >
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Create Account
+            </h2>
+            <form className="space-y-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {!optOpen ? (
                 <button
                   type="button"
-                  className="rounded-full p-3 bg-blue-600/80 text-white"
-                  onClick={googleLogin}
+                  onClick={handleSendOtp}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-full transition"
                 >
-                  Login with Google
+                  Send OTP
                 </button>
-                <p>
-                  Create a new Account?{" "}
-                  <span
-                    className="text-blue-700 cursor-pointer"
-                    onClick={signOverlay}
-                  >
-                    Signup
-                  </span>
-                </p>
-              </form>
-              <p className="text-2xl cursor-pointer " onClick={closeLogin}>
-                X
-              </p>
-            </motion.div>
-          </div>
-        </>
-      )}
-
-      {signOpen && (
-        <>
-          <div className="h-screen w-screen flex justify-center items-center absolute">
-            <motion.div
-              initial={{ opacity: 0, y: -100 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className=" bg-green-300 rounded-xl flex justify-between"
-            >
-              <div className="flex flex-col gap-5 p-8 ">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="bg-white rounded-full p-2"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                {!optOpen && (
+              ) : !flag ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full px-4 py-3 border border-yellow-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
                   <button
-                    type="submit"
-                    className="rounded-full p-3 bg-green-600/50"
-                    onClick={handleSendOtp}
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-full transition"
                   >
-                    Send OTP
+                    Verify OTP
                   </button>
-                )}
-
-                {optOpen && (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Enter OTP"
-                      className="bg-white rounded-full p-2"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                    />
-
-                    <button
-                      type="submit"
-                      className="rounded-full p-3 bg-green-600/50"
-                      onClick={handleVerifyOtp}
-                    >
-                      Verify OTP
-                    </button>
-                  </>
-                )}
-                {flag && (
-                  <>
-                    <form onSubmit={register} className="flex flex-col gap-5">
-                      <input
-                        required
-                        type="text"
-                        placeholder="Username"
-                        className="bg-white rounded-full p-2"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                      />
-                      <input
-                        required
-                        type="password"
-                        placeholder="Password"
-                        className="bg-white rounded-full p-2"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button className="rounded-full p-3 bg-green-600/50">
-                        SignUp
-                      </button>
-                    </form>
-                  </>
-                )}
-                <p>
-                  Already have an account?{" "}
-                  <span
-                    className="text-blue-700 cursor-pointer"
-                    onClick={loginOverlay}
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={register}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-full transition"
                   >
-                    Login
-                  </span>
-                </p>
-              </div>
-              <p className="text-2xl cursor-pointer" onClick={closeLogin}>
-                X
+                    Sign Up
+                  </button>
+                </>
+              )}
+              <p className="text-center text-sm mt-4">
+                Already have an account?{" "}
+                <span
+                  onClick={loginOverlay}
+                  className="text-indigo-600 hover:underline cursor-pointer"
+                >
+                  Login
+                </span>
               </p>
-            </motion.div>
-          </div>
-        </>
+            </form>
+            <button
+              onClick={closeLogin}
+              className="absolute top-3 right-4 text-xl font-bold text-gray-500 hover:text-red-500 transition"
+            >
+              &times;
+            </button>
+          </motion.div>
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

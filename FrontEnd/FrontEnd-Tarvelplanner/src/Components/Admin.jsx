@@ -70,6 +70,16 @@ const Admin = () => {
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.roles}</td>
+                  {/* <td>
+                    {user.roles.includes("USER") && (
+                      <button
+                        className="bg-green-500 px-3 py-1 rounded hover:bg-green-600"
+                        // onClick={() => handleUserButtonClick(user.id)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </td> */}
                   <td>
                     {user.roles.includes("USER") && (
                       <button
