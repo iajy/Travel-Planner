@@ -1,4 +1,3 @@
-// import { section } from "motion/react-client";
 import React from "react";
 
 const Footer = () => {

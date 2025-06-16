@@ -147,6 +147,11 @@ const Ticket = () => {
   return (
     <>
       <AppBar />
+      <img
+          src=".\src\assets\background_visual-85f87405.svg"
+          alt=""
+          className="w-screen h-screen object-cover absolute -z-10 "
+        />
       <div className="p-4 py-20">
         <p className="text-xl text-center text-gray-500">
           Discover the best flight deals with our smart search feature.
@@ -154,14 +159,6 @@ const Ticket = () => {
         <h1 className="text-4xl text-center font-bold text-green-700/80 text-shadow-lg/20 mb-4">
           Flight Search
         </h1>
-        <motion.img
-          initial={{ x: 250, y: -250 }}
-          animate={{ x: 0, y: 0 }}
-          transition={{ duration: 1.4 }}
-          src="src\assets\airplane-297578_1280.webp"
-          className=" -z-10 h-100 fixed m-10"
-          alt=""
-        />
         <div className="mb-4  flex flex-col items-center gap-2 ">
           <form onSubmit={handleSearch} className="flex flex-col items-center">
             <table className="border-separate border-spacing-6">
@@ -249,7 +246,6 @@ const Ticket = () => {
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 1.02 }}
-              // onClick={handleSearch}
               type="submit"
               className="font-semibold rounded-full py-2 px-4 bg-green-600/90 cursor-pointer"
             >

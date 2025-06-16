@@ -19,8 +19,6 @@ const AppBar = () => {
 
   const [admin, setAdmin] = useState(false);
 
-  // const navigate = useNavigate();
-
   const loginOverlay = () => {
     setLoginOpen(true);
     setSignOpen(false);
@@ -96,7 +94,6 @@ const AppBar = () => {
 
       localStorage.setItem("jwtToken", token);
 
-      // console.log("User ID after login:", localStorage.getItem("userId"));
 
       alert("Login successful");
       closeLogin();
@@ -132,7 +129,6 @@ const AppBar = () => {
       // console.log(response.data);
 
       if (response.data.includes("ADMIN")) {
-        // navigate("/admin");
         setAdmin(true);
       } else {
         // alert("You are not an admin!");
@@ -177,10 +173,9 @@ const AppBar = () => {
                 Tickets
               </button>
             </Link>
-
-            <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
+            {/* <button className="px-4 py-2 rounded-full hover:bg-green-600/60">
               Bookings
-            </button>
+            </button> */}
 
             {localStorage.getItem("jwtToken") ? (
               <div className="relative ">
@@ -210,9 +205,6 @@ const AppBar = () => {
                       <Link to={"/admin"}>
                         <button
                           className="block px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left rounded"
-                          // onClick={() =>
-                          //   handleAdmin(localStorage.getItem("userId"))
-                          // }
                         >
                           Admin
                         </button>

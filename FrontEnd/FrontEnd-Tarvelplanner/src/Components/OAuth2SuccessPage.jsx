@@ -16,7 +16,7 @@ const OAuth2SuccessPage = () => {
       localStorage.setItem("username", username);
       alert("Login successful");
       navigate("/");
-      window.location.reload(); // Refresh for new state
+      window.location.reload();
     } else {
     //   alert("Google login failed. Please try again!");
       navigate("/login");

@@ -21,8 +21,8 @@ const Hero = () => {
     title: "",
     startDate: "",
     endDate: "",
-    destinations: [],
-    activities: [],
+    destination: [],
+    interests: [],
     notes: "",
     collaborators: [],
   });
@@ -38,7 +38,7 @@ const Hero = () => {
   const onChangeInput = (e) => {
     const { name, value } = e.target;
 
-    if (["destinations", "activities", "collaborators"].includes(name)) {
+    if (["destination", "interests", "collaborators"].includes(name)) {
       setItinerary((prev) => ({
         ...prev,
         [name]: value.split(",").map((item) => item.trim()),
@@ -48,7 +48,39 @@ const Hero = () => {
         ...prev,
         [name]: value,
       }));
-      setStartDate(itinerary.startDate);
+      // setStartDate(itinerary.startDate);
+    }
+  };
+
+  const [result, setResult] = useState("");
+
+  const [form, setForm] = useState({
+    destination: "",
+    startDate: "",
+    endDate: "",
+    interests: "",
+  });
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/generate-itinerary",
+        form
+      );
+      const aiResponse = res.data;
+      console.log("AI response:", res.data);
+
+      setResult(aiResponse.choices[0].message.content);
+      localStorage.setItem("result", result); 
+    } catch (err) {
+      console.error("API error:", err.response?.data || err.message);
+      alert(
+        "Something went wrong: " + (err.response?.data?.error || err.message)
+      );
     }
   };
 
@@ -60,18 +92,18 @@ const Hero = () => {
         "http://localhost:8000/api/itineraries",
         itinerary
       );
-      // console.log(res.data);
+      console.log(res.data);
       const uuid = res.data.id;
       localStorage.setItem("uuid", uuid);
 
       setItinerary({
-        username: username, // keep username
-        userId: userId, // keep userId
+        username: username,
+        userId: userId,
         title: "",
         startDate: "",
         endDate: "",
-        destinations: [],
-        activities: [],
+        destination: [],
+        interests: [],
         notes: "",
         collaborators: [],
       });
@@ -83,24 +115,20 @@ const Hero = () => {
     }
   };
 
-  const [startDate, setStartDate] = useState();
-
   const { ref, inView } = useInView({
     threshold: 0.5,
   });
 
   const formRef = useRef();
 
-  // Close openEdit when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // If openEdit is true and click is outside the form
       if (
         openForm &&
         formRef.current &&
         !formRef.current.contains(event.target)
       ) {
-        setOpenForm(false); // Close the edit form
+        setOpenForm(false); 
       }
     };
 
@@ -152,7 +180,11 @@ const Hero = () => {
                   transition={{ duration: 0.7 }}
                 >
                   <form
-                    onSubmit={itinearyHandle}
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      await handleSubmit(e);
+                      await itinearyHandle(e);
+                    }}
                     className="flex flex-col items-center"
                   >
                     <table className="border-separate border-spacing-8">
@@ -162,10 +194,13 @@ const Hero = () => {
                             <input
                               required
                               type="text"
-                              name="destinations"
+                              name="destination"
                               placeholder="Where to go"
-                              value={itinerary.destinations.join(", ")}
-                              onChange={onChangeInput}
+                              value={itinerary.destination.join(", ")}
+                              onChange={(e) => {
+                                onChangeInput(e);
+                                handleChange(e);
+                              }}
                               className="rounded-full p-2 bg-blue-300/50"
                             />
                           </td>
@@ -181,7 +216,10 @@ const Hero = () => {
                               name="startDate"
                               min={new Date().toISOString().split("T")[0]}
                               value={itinerary.startDate}
-                              onChange={onChangeInput}
+                              onChange={(e) => {
+                                onChangeInput(e);
+                                handleChange(e);
+                              }}
                               className="rounded-full p-2 bg-blue-300/50 font-normal"
                             />
                           </td>
@@ -201,10 +239,13 @@ const Hero = () => {
                           <td>
                             <input
                               type="text"
-                              name="activities"
-                              placeholder="Activies"
-                              value={itinerary.activities.join(", ")}
-                              onChange={onChangeInput}
+                              name="interests"
+                              placeholder="Interests (optional)"
+                              value={itinerary.interests.join(", ")}
+                              onChange={(e) => {
+                                onChangeInput(e);
+                                handleChange(e);
+                              }}
                               className="rounded-full p-2 bg-blue-300/50"
                             />
                           </td>
@@ -227,7 +268,10 @@ const Hero = () => {
                                   .split("T")[0];
                               })()}
                               value={itinerary.endDate}
-                              onChange={onChangeInput}
+                              onChange={(e) => {
+                                onChangeInput(e);
+                                handleChange(e);
+                              }}
                               className="rounded-full p-2 bg-blue-300/50 font-normal"
                             />
                           </td>
@@ -241,20 +285,6 @@ const Hero = () => {
                               className="rounded-full p-2 bg-blue-300/50"
                             />
                           </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            {/* <input
-                            type="text"
-                            name="collaborators"
-                            placeholder="Collaborators"
-                            value={itinerary.collaborators.join(", ")}
-                            onChange={onChangeInput}
-                            className="rounded-full p-2 bg-blue-300/50"
-                          /> */}
-                          </td>
-                          <td></td>
-                          <td></td>
                         </tr>
                       </tbody>
                     </table>
@@ -273,6 +303,14 @@ const Hero = () => {
           </div>
         </motion.div>
       </section>
+      <div className="flex justify-center">
+        {result && (
+          <div className="mt-6 w-1/2 mx-10 whitespace-pre-wrap text-gray-800 bg-gray-100 p-4 rounded">
+            {result}
+          </div>
+        )}
+      </div>
+
       <About />
       <Destination />
       <Footer />

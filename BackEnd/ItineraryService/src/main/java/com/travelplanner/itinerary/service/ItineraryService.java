@@ -51,8 +51,8 @@ public class ItineraryService {
         copy.setTitle(original.getTitle() + " (Copy)");
         copy.setStartDate(original.getStartDate());
         copy.setEndDate(original.getEndDate());
-        copy.setDestinations(List.copyOf(original.getDestinations()));
-        copy.setActivities(List.copyOf(original.getActivities()));
+        copy.setDestination(List.copyOf(original.getDestination()));
+        copy.setInterests(List.copyOf(original.getInterests()));
         copy.setNotes(original.getNotes());
         copy.setCollaborators(List.copyOf(original.getCollaborators()));
         return repository.save(copy);

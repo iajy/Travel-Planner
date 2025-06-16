@@ -3,7 +3,6 @@ import AppBar from "./AppBar";
 import axios from "axios";
 import { motion } from "motion/react";
 import { useInView } from "react-intersection-observer";
-// import { div } from "motion/react-client";
 
 const MyItineary = () => {
   const userId = localStorage.getItem("userId");
@@ -16,7 +15,6 @@ const MyItineary = () => {
   const [uuid, setUuid] = useState(null);
 
   const handleEdit = (id, uuid) => {
-    // document.getElementById("editForm")?.scrollIntoView({ behavior: "smooth" });
     setUuid(uuid);
     setId(id);
     setOpenEdit(!openEdit);
@@ -24,12 +22,14 @@ const MyItineary = () => {
 
   const formRef = useRef();
 
-  // Close openEdit when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // If openEdit is true and click is outside the form
-      if (openEdit && formRef.current && !formRef.current.contains(event.target)) {
-        setOpenEdit(false); // Close the edit form
+      if (
+        openEdit &&
+        formRef.current &&
+        !formRef.current.contains(event.target)
+      ) {
+        setOpenEdit(false); 
       }
     };
 
@@ -45,7 +45,8 @@ const MyItineary = () => {
 
       setItinerariesCard(!itinerariesCard);
 
-      setItineraries(response.data); // entire array
+      setItineraries(response.data); 
+      console.log(response);
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -81,13 +82,12 @@ const MyItineary = () => {
     setItineraries((prevItineraries) =>
       prevItineraries.map((itinerary, index) => {
         if (index === id) {
-          if (name === "destinations" || name === "activities") {
+          if (name === "destination" || name === "interests") {
             return {
               ...itinerary,
               [name]: value.split(",").map((item) => item.trim()),
             };
           } else {
-            // Handle normal string/date fields
             return {
               ...itinerary,
               [name]: value,
@@ -118,7 +118,7 @@ const MyItineary = () => {
           initial={{ opacity: 0, y: 100 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
-          className="h-screen py-20 flex flex-col justify-center items-center"
+          className="h-full py-20 flex flex-col justify-center items-center"
         >
           <div className="text-center flex flex-col gap-2 items-center">
             <span className=" text-6xl font-bold  text-green-700/80 text-shadow-lg/20">
@@ -136,173 +136,155 @@ const MyItineary = () => {
               Show the Itinearies
             </motion.button>
           </div>
-            {openEdit && (
-              <section 
-              ref={formRef} 
-              className="flex justify-center z-30">
-                <div className="absolute flex flex-col items-center justify-center h-1/2 bg-gray-100/90  rounded-3xl shadow-lg/20 hover:scale-101 ">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      itinearyUpdate();
-                    }}
-                    className="flex flex-col items-center"
-                  >
-                    <table className="border-separate border-spacing-8">
-                      <tbody>
-                        <tr>
-                          <td>
-                            <input
-                              required
-                              type="text"
-                              name="destinations"
-                              placeholder="Where to go"
-                              value={itineraries[id].destinations.join(", ")}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50"
-                            />
-                          </td>
-                          <td>
-                            <label className="px-1 font-medium">
-                              Starting Date :
-                            </label>
-                          </td>
-                          <td>
-                            <input
-                              required
-                              type="date"
-                              name="startDate"
-                              value={itineraries[id].startDate}
-                              min={new Date().toISOString().split("T")[0]}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50 font-normal"
-                            />
-                          </td>
-                          <td>
-                            <input
-                              required
-                              type="text"
-                              name="title"
-                              placeholder="Title Of The Trip"
-                              value={itineraries[id].title}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <input
-                              type="text"
-                              name="activities"
-                              placeholder="Activies"
-                              value={itineraries[id].activities.join(", ")}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50"
-                            />
-                          </td>
-                          <td>
-                            <label className="px-1 font-medium">
-                              Ending Date :{" "}
-                            </label>
-                          </td>
-                          <td>
-                            <input
-                              required
-                              type="date"
-                              name="endDate"
-                              min={
-                                new Date(Date.now() + 86400000)
-                                  .toISOString()
-                                  .split("T")[0]
-                              }
-                              value={itineraries[id].endDate}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50 font-normal"
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              name="notes"
-                              placeholder="Any Notes"
-                              value={itineraries[id].notes}
-                              onChange={onChangeInput}
-                              className="rounded-full p-2 bg-blue-300/50"
-                            />
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            {/* <input
-                                        type="text"
-                                        name="collaborators"
-                                        placeholder="Collaborators"
-                                        value={itinerary.collaborators.join(", ")}
-                                        onChange={onChangeInput}
-                                        className="rounded-full p-2 bg-blue-300/50"
-                                      /> */}
-                          </td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 1.02 }}
-                      className="font-semibold  rounded-full p-2 bg-green-600/90 cursor-pointer"
-                      type="submit"
-                      // onSubmit={itinearyUpdate}
-                    >
-                      Update
-                    </motion.button>
-                  </form>
-                </div>
-              </section>
-            )}
-          <div className="flex justify-center">
-            {itinerariesCard && (
-              <div className="md:grid-cols-2 grid grid-cols-1 gap-10 mx-10 my-4 w-3/4">
-                {itineraries.map((item, index) => (
-                  <motion.div
-                    initial={{ opacity: 0, y: -100 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    key={item.id}
-                    className="flex flex-col items-start p-4 shadow rounded my-2 bg-gray-200/50 gap-2"
-                  >
-                    <h2 className="text-xl font-bold">{item.title}</h2>
-                    <p>Start Date: {item.startDate}</p>
-                    <p>End Date: {item.endDate}</p>
-                    <p>Destinations: {item.destinations.join(", ")}</p>
-                    <p>Bookings: {item.bookings}</p>
-                    <div className="flex gap-5">
-                      <button
-                        className="text-white bg-green-500 rounded px-4 py-2"
-                        onClick={() => {
-                          document
-                            .getElementById("editForm")
-                            ?.scrollIntoView({ behavior: "smooth" });
-                          handleEdit(index, item.id);
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-white bg-red-500 rounded px-4 py-2"
-                        onClick={() => itineraryDelete(item.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </div>
         </motion.div>
+      
+      {openEdit && (
+        <section ref={formRef} className="flex justify-center z-30">
+          <div className="absolute flex flex-col items-center justify-center h-1/2 bg-gray-100/90  rounded-3xl shadow-lg/20 hover:scale-101 ">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                itinearyUpdate();
+              }}
+              className="flex flex-col items-center"
+            >
+              <table className="border-separate border-spacing-8">
+                <tbody>
+                  <tr>
+                    <td>
+                      <input
+                        required
+                        type="text"
+                        name="destination"
+                        placeholder="Where to go"
+                        value={itineraries[id].destination.join(", ")}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50"
+                      />
+                    </td>
+                    <td>
+                      <label className="px-1 font-medium">
+                        Starting Date :
+                      </label>
+                    </td>
+                    <td>
+                      <input
+                        required
+                        type="date"
+                        name="startDate"
+                        value={itineraries[id].startDate}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50 font-normal"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        required
+                        type="text"
+                        name="title"
+                        placeholder="Title Of The Trip"
+                        value={itineraries[id].title}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50"
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        name="interests"
+                        placeholder="Interests"
+                        value={itineraries[id].interests.join(", ")}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50"
+                      />
+                    </td>
+                    <td>
+                      <label className="px-1 font-medium">Ending Date : </label>
+                    </td>
+                    <td>
+                      <input
+                        required
+                        type="date"
+                        name="endDate"
+                        min={
+                          new Date(Date.now() + 86400000)
+                            .toISOString()
+                            .split("T")[0]
+                        }
+                        value={itineraries[id].endDate}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50 font-normal"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="notes"
+                        placeholder="Any Notes"
+                        value={itineraries[id].notes}
+                        onChange={onChangeInput}
+                        className="rounded-full p-2 bg-blue-300/50"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 1.02 }}
+                className="font-semibold  rounded-full p-2 bg-green-600/90 cursor-pointer"
+                type="submit"
+              >
+                Update
+              </motion.button>
+            </form>
+          </div>
+        </section>
+      )}
       </section>
+      <div className="flex justify-center">
+        {itinerariesCard && (
+          <div className="md:grid-cols-2 grid grid-cols-1 gap-10 mx-10 my-4 w-3/4">
+            {itineraries.map((item, index) => (
+              <motion.div
+                initial={{ opacity: 0, y: -100 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                key={item.id}
+                className="flex flex-col items-start p-4 shadow rounded my-2 bg-gray-200/50 gap-2"
+              >
+                <h2 className="text-xl font-bold">{item.title}</h2>
+                <p>Start Date: {item.startDate}</p>
+                <p>End Date: {item.endDate}</p>
+                <p>Destination: {item.destination.join(", ")}</p>
+                <p>Bookings: {item.bookings}</p>
+                <div className="flex gap-5">
+                  <button
+                    className="text-white bg-green-500 rounded px-4 py-2"
+                    onClick={() => {
+                      document
+                        .getElementById("editForm")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                      handleEdit(index, item.id);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="text-white bg-red-500 rounded px-4 py-2"
+                    onClick={() => itineraryDelete(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

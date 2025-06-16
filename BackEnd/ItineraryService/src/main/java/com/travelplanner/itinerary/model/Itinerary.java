@@ -27,10 +27,10 @@ public class Itinerary {
 	private String shareToken;
 
 	@ElementCollection
-	private List<String> destinations;
+	private List<String> destination;
 
 	@ElementCollection
-	private List<String> activities;
+	private List<String> interests;
 
 	@ElementCollection
 	private List<UUID> collaborators;
@@ -88,20 +88,20 @@ public class Itinerary {
 		this.endDate = endDate;
 	}
 
-	public List<String> getDestinations() {
-		return destinations;
+	public List<String> getDestination() {
+		return destination;
 	}
 
-	public void setDestinations(List<String> destinations) {
-		this.destinations = destinations;
+	public void setDestination(List<String> destination) {
+		this.destination = destination;
 	}
 
-	public List<String> getActivities() {
-		return activities;
+	public List<String> getInterests() {
+		return interests;
 	}
 
-	public void setActivities(List<String> activities) {
-		this.activities = activities;
+	public void setInterests(List<String> interests) {
+		this.interests = interests;
 	}
 
 	public String getNotes() {
